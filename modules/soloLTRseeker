@@ -1,0 +1,361 @@
+#!/bin/bash
+
+set -e
+set -u
+set -o pipefail
+
+export bin_path=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+version="2024_09_18"
+
+num=$(shuf -i 1-100000 -n 1)
+## usage
+usage() {
+    cat <<EOF
+
+    USAGE
+      $(basename $0) [-b] [-n] [-t] [-c] [-l] [-s] [-o] [-q] [-p] [-m] [-r] [-u] [-h] ann_file fasta_file [chromosome_name]
+
+    DESCRIPTION
+      soloLTRseeker v0.0
+
+    INPUT FILES
+      ann_file: annotation in gff3 format
+      fasta_file
+
+    OPTIONAL ARGUMENTS
+      -b max length difference between LTR pairs;default = 50
+      -n min LTR length;default = 1
+      -t LTRRT lineage classification via TEsorter
+      -c percentage identity (cd-hit);default = 0.95
+      -l longest seq coverage (cd-hit);default 0.9
+      -s shortest seq coverage (cd-hit);default 0.3
+      -o query coverage (BLAST);default = 0.99
+      -q query length for homology search;default = 200
+      -p query length for TSD annotation;default = 6
+      -m mismatch allowed in TSD seq;default = 1
+      -r split BLAST LTR query library into # files;default = 10
+      -u analyse BLAST query files in parallel;default = T
+      -h print USAGE, DESCRIPTION and OPTIONAL ARGUMENTS
+
+      [chromosome_name] for partial analysis
+
+EOF
+    exit 0
+}
+
+
+cat << EOF >> out.log--$num
+
+############################################################
+######################  soloLTRseeker   ####################
+############################################################
+
+version: $(basename $0) ${version}
+$(date +"%Y/%m/%d %H:%M:%S")
+
+######################    option set    ####################
+
+EOF
+
+while getopts ":b:n:tc:l:s:o:q:p:m:r:u:h" opt;do
+  case "${opt}" in
+     b)
+       echo "max LTR diff: $OPTARG" >> out.log--$num 2>&1
+       export LTR_diff=$OPTARG
+       ;;
+     n)
+       echo "min LTR length: $OPTARG" >> out.log--$num 2>&1
+       export min_LTR_length=$OPTARG
+       ;;
+     t)
+       echo "LTRRT lineage classification via TEsorter" >> out.log--$num 2>&1
+       export TEsorter_cls="T"
+       ;;
+     c)
+       echo "percentage identity (cd-hit): $OPTARG" >> out.log--$num 2>&1
+       export cd_hit=$OPTARG
+       ;;
+     l)
+       echo "longest seq coverage (cd-hit): $OPTARG" >> out.log--$num 2>&1
+       export aL=$OPTARG
+       ;;
+     s)
+       echo "shortest seq coverage (cd-hit): $OPTARG" >> out.log--$num 2>&1
+       export aS=$OPTARG
+       ;;
+     o)
+       echo "BLAST overlap: $OPTARG" >> out.log--$num 2>&1
+       export overlap=$OPTARG
+       ;;
+     q)
+       echo "query length for homology search: $OPTARG" >> out.log--$num 2>&1
+       export qlength=$OPTARG
+       ;;
+     p)
+       echo "query length for TSD annotation: $OPTARG" >> out.log--$num 2>&1
+       export pad_2=$OPTARG
+       ;;
+     m)
+       echo "# mismatch allowed: $OPTARG" >> out.log--$num 2>&1
+       export mismatch=$OPTARG
+       ;;
+     r)
+       echo "split LTR query library into $OPTARG files" >> out.log--$num 2>&1
+       export batch_size=$OPTARG
+       ;;
+     u)
+       echo "run BLAST in parallel: $OPTARG" >> out.log--$num 2>&1
+       export parallel=$OPTARG
+       ;;
+     h)
+       usage
+       ;;
+     *)
+       usage
+       ;;
+  esac
+done
+
+  ann_file=${@:$OPTIND:1}
+  fasta_file=${@:$OPTIND+1:1}
+  target_chr=${@:$OPTIND+2:1}
+
+  if [ ! -f "${ann_file}" ] || [ ! -f "${fasta_file}" ]; then
+    usage
+    exit 1
+  fi
+
+  ## set dir and input files
+  export pwd=$(pwd)
+  export sample=$(basename "${fasta_file%.*}")
+
+  ## provided that different runs are launched from the same directory
+  export run=$(ls -dl ${pwd}/${sample}/output_$(date +%Y_%m_%d)*/ | (grep "output_" || true) | awk -v current_date=$(date +%Y_%m_%d) 'END{if(NR == 0){print current_date"_1"}else{print current_date"_"NR+1}}')
+
+  if [[ ! -d "${pwd}/${sample}/" ]]; then
+    mkdir ${pwd}/${sample}/
+    mkdir ${pwd}/${sample}/output_${run}/
+  elif [[ -d "${pwd}/${sample}/" ]] && [[ ${run//*_} == "1" ]]; then
+    echo "unable to initialize the pipeline! Directory already exists. Try changing fasta file name!"
+    exit 1
+  else
+    mkdir ${pwd}/${sample}/output_${run}/
+  fi
+
+  if [[ "${fasta_file}" == *".gz" ]]; then
+    cp -p ${fasta_file} ${pwd}/${sample}/output_${run}/
+    bgzip -d -c *.gz > ${pwd}/${sample}/output_${run}/sample.fasta
+  else
+    cp -p ${fasta_file} ${pwd}/${sample}/output_${run}/sample.fasta
+  fi
+
+  cp -p ${ann_file} ${pwd}/${sample}/output_${run}/sample.intact.gff3
+
+  cd ${pwd}/${sample}/output_${run}/
+  mv ${pwd}/out.log--$num out.log
+
+  sleep 5
+
+
+  ## declare default options
+  if [ -z ${LTR_diff+x} ]; then
+    export LTR_diff="50";
+    echo  "default max LTR difference: ${LTR_diff}" >> out.log 2>&1
+  fi
+
+  if [ -z ${min_LTR_length+x} ]; then
+    export min_LTR_length="1"
+    echo "default min LTR length: ${min_LTR_length}" >> out.log 2>&1
+  fi
+
+  if [ -z ${TEsorter_cls+x} ]; then
+    export TEsorter_cls="F"
+    echo "Skip TEsorter classification" >> out.log 2>&1
+  fi
+
+  if [ -z ${cd_hit+x} ]; then
+    export cd_hit="0.95"
+    echo "default percentage identity (cd-hit): ${cd_hit}" >> out.log 2>&1
+  fi
+
+  if [ -z ${aL+x} ]; then
+    export aL="0.3"
+    echo "default longest seq coverage (cd-hit): ${aL}" >> out.log 2>&1
+  fi
+
+  if [ -z ${aS+x} ]; then
+    export aS="0.9"
+    echo "default shortest seq coverage (cd-hit): ${aS}" >> out.log 2>&1
+  fi
+
+  if [ -z ${overlap+x} ]; then
+    export overlap="0.99"
+    echo "default BLAST overlap: ${overlap}" >> out.log 2>&1
+  fi
+
+  if [ -z ${qlength+x} ]; then
+    export qlength="200"
+    echo "default query length for homology search: ${qlength}" >> out.log 2>&1
+  fi
+
+  if [ -z ${pad_2+x} ]; then
+    export pad_2="6";
+    echo "default query length for TSD annotation: ${pad_2}" >> out.log 2>&1
+  fi
+
+  if [ -z ${mismatch+x} ]; then
+    export mismatch="1"
+    echo "default # mismatch allowed: ${mismatch}" >> out.log 2>&1
+  fi
+
+  if [ -z ${batch_size+x} ]; then
+    export batch_size="10"
+    echo "split LTR query library into ${batch_size} files" >> out.log 2>&1
+  fi
+
+  if [ -z ${parallel+x} ]; then
+    echo "run BLAST in parallel" >> out.log 2>&1
+    export parallel="T"
+  fi
+
+  if [ -z ${target_chr} ]; then
+    echo "whole genome analysis" >> out.log 2>&1
+  else
+    echo "partial analysis: $target_chr" >> out.log 2>&1
+  fi
+
+
+  ## load lib
+  source ${bin_path}/pfunlib.sh
+
+cat << EOF >> out.log
+
+######################   LTR library    #####################
+
+$(date +"%Y/%m/%d %H:%M:%S")
+
+EOF
+
+export module="LTR library"
+${bin_path}/LTRlibrary_01.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+chromosome names were adapted to avoid conflicts...
+
+EOF
+
+${bin_path}/LTRlibrary_02.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+LTRRT coordinates successfully retrieved.
+
+EOF
+
+${bin_path}/LTRlibrary_03.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+min LTR length and max size divergence were evaluated.
+
+EOF
+
+  if [[ "${TEsorter_cls}" == "T" ]]; then
+    ${bin_path}/LTRlibrary_04.sh >> out.log 2>&1
+  fi
+
+${bin_path}/LTRlibrary_05.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+sequences for downstream analysis were extracted
+
+EOF
+
+${bin_path}/LTRlibrary_06.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+TG..CA assessment performed.
+
+EOF
+
+${bin_path}/LTRlibrary_07.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+Clustering step done.
+
+EOF
+
+
+cat << EOF >> out.log
+######################      BLAST       #####################
+
+$(date +"%Y/%m/%d %H:%M:%S")
+
+EOF
+
+if ! grep -P -q "${target_chr}\t" chr_map.txt; then
+  printf "$target_chr not found in fasta file!" >> out.log
+  exit 1
+fi
+
+if [ -n "$target_chr" ]; then
+  key=$(grep -P "${target_chr}\t" chr_map.txt | cut -f2)
+  awk -v key=${key} '{if(NR == 1){$0 = ">"key; print}else{print}}' genome_dir/${target_chr}.fasta > sample.fasta
+  rm -I sample.fasta.fai
+fi
+
+
+export module="soloLTR mining"
+${bin_path}/mining_01.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+###################### homology search  #####################
+
+$(date +"%Y/%m/%d %H:%M:%S")
+
+EOF
+
+${bin_path}/mining_02.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+######################  TSD annotation  #####################
+
+$(date +"%Y/%m/%d %H:%M:%S")
+
+EOF
+
+${bin_path}/mining_03.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+######################    gff3 output   #####################
+
+$(date +"%Y/%m/%d %H:%M:%S")
+
+EOF
+
+export module="soloLTR annotation"
+${bin_path}/annotation_01.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+######################   final output   #####################
+
+$(date +"%Y/%m/%d %H:%M:%S")
+
+EOF
+
+${bin_path}/annotation_02.sh >> out.log 2>&1
+${bin_path}/annotation_03.sh >> out.log 2>&1
+
+cat << EOF >> out.log
+
+Analysis completed!
+
+EOF
