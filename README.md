@@ -4,7 +4,7 @@ SoloLTRs are Transposable Element (TE) derived sequences generated during unequa
 
 ## PIPELINE OVERVIEW
 
-**DISCLAIMER:** Essentially, this is all about parsing other tool’s outputs (cd-hit, TEsorter, BLAST, water, you name it!) using awk and some basic bash commands. Be that as it may, order and care matter when it comes to get relevant results. So, there we go:
+**DISCLAIMER:** Essentially, this is all about parsing other tool’s outputs (cd-hit, TEsorter, BLAST, water, you name it!) using awk and some additional basic commands. Be that as it may, order and care matter when it comes to get relevant results. So, there we go:
 
 The pipeline comprises two main modules, viz.:
 
@@ -18,7 +18,7 @@ Additionally, TEsorter might be run within the pipeline too. If that is the case
 
 2.	soloLTR mining 
 
-**BLAST** is used to identify candidate loci across the target genome. Initial hits are collapsed and classify as per the query which showed the highest percentage identity. By default, hits must cover no less than 0.99 of the sequence that produced them, though more permissive thresholds can be set. Next, **signs of truncated TEs** are searched out by comparing the flanking sequences of each BLAST hit to the internal domain edges of all intact elements. Our tests indicate that the resolution of thishomology search is maximized surveying 200 bp length sequences. Yet, this value might be adapted, if the user finds it convenient. Finally, upstream and downstream sequences are locally aligned to locate both Target Sites Duplication (**TSDs**). In general, TSD length ranges narrowly from 5 to 6 bp. Consequently, this step is configured to align pairs of 6-mers allowing 1 mismatch between them.
+**BLAST** is used to identify candidate loci across the target genome. Initial hits are collapsed and classify as per the query which showed the highest percentage identity. By default, hits must cover no less than 0.99 of the sequence that produced them, though more permissive thresholds can be set. Next, **signs of truncated TEs** are searched out by comparing the flanking sequences of each BLAST hit to the internal domain edges of all intact elements. Our tests indicate that the resolution of this homology search is maximized surveying 200 bp length sequences. Yet, this value might be adapted, if the user finds it convenient. Finally, upstream and downstream sequences are locally aligned to locate both Target Sites Duplication (**TSDs**). In general, TSD length ranges narrowly from 5 to 6 bp. Consequently, this step is configured to align pairs of 6-mers allowing 1 mismatch between them.
 
 
 ## INPUT FILES
@@ -44,9 +44,9 @@ OPTIONAL: to run a partial analysis, one chromosome name, as it appears in the f
 
 `sample_soloLTR.fa`: fasta file including the sequence of all annotated soloLTRs. ID tags reported in the gff3 file is used as fasta headers: *>soloLTR/sample/chr/start/end*
 
-`sample_LTRRT_lengths.txt`: this file reports a number of relevant features of all LTR-RTs considered during the LTR library module: *LTR_query_id  fl_LTRRT_length lLTR_length  rLTR_length  idom_length  motif  b_n_filter  tg_ca_filter  cd_hit_step*. Particularly, the last three fields of the table show the outcome of the three-step filtering process carried out in that part of the pipeline (i.e., min length and max difference between pairs of LTRs, dinucleotide pattern assessment, and cd-hit clustering). Besides, LTR_query_id contain coordinates of the intact LTRRT, feature’s type term, and its lineage classification, if applicable. Apart from an itemized length report, motif field cover the di-nucleotides sites at the start and end of the lLTR sequence.
+`sample_LTRRT_lengths.txt`: this file reports a number of relevant features of all LTR-RTs considered during the LTR library module: *LTR_query_id  fl_LTRRT_length lLTR_length  rLTR_length  idom_length  motif  b_n_filter  tg_ca_filter  cd_hit_step*. Particularly, the last three fields of the table show the outcome of the three-step filtering process carried out in that part of the pipeline (i.e., min length and max difference between pairs of LTRs, dinucleotide pattern assessment, and cd-hit clustering). Besides, LTR_query_id contain coordinates of the intact LTR-RT, feature’s type term, and its lineage classification, if applicable. Finally, apart from an itemized length report, motif field covers the di-nucleotides sites at the start and end of the lLTR sequence.
 
-`sample_LTR_BLAST_overlap.txt`: each BLAST-hit initially found in the mining module is reported in this file as follows: *chr  start  end  queryID  strand  piden  locus  locus_type  BLAST_single_hit  homology  TSD*. Here, queryID is formatted as in sample_LTRRT_lengths.txt file. It is worth noting that locus_type is used to further describe how all hits overlap in a specific locus. Specifically, complete refers to those loci whose all hits are enclosed by the longest one. Conversely, partial tag accounts for those loci whose ends bear single overhanging nucleotides in reference to the entire overlapping region. Again, the last three columns allow tracing back the fate of every hit following a binary key (i.e., PASS/FAIL).  
+`sample_LTR_BLAST_overlap.txt`: each BLAST-hit initially found in the mining module is reported in this file as follows: *chr  start  end  queryID  strand  piden  locus  locus_type  BLAST_single_hit  homology  TSD*. Here, queryID is formatted as in sample_LTRRT_lengths.txt file. It is worth noting that locus_type is used to further describe how all hits overlap in a specific locus. In particular, complete refers to those loci whose all hits are enclosed by the longest one. Conversely, partial tag accounts for those loci whose ends bear single overhanging nucleotides in reference to the entire overlapping region. Again, the last three columns allow tracing back the fate of every hit following a binary key (i.e., PASS/FAIL).  
 
 `sample_hit_count.txt`: A summary file gathering the overall counts at each step of the pipeline.  
 
@@ -70,7 +70,7 @@ soloLTRseeker -h
     OPTIONAL ARGUMENTS
       -b max length difference between LTR pairs;default = 50
       -n min LTR length;default = 1
-      -t LTRRT lineage classification via TEsorter
+      -t LTR-RT lineage classification via TEsorter
       -c percentage identity (cd-hit);default = 0.95
       -l longest seq coverage (cd-hit);default 0.9
       -s shortest seq coverage (cd-hit);default 0.3
@@ -84,6 +84,18 @@ soloLTRseeker -h
 
       [chromosome_name] for partial analysis
 
+
+## QUICK START
+
+Provided your system has installed all necessary dependencies (see them below), it just takes executing the main script to get the pipeline started (be sure all the sh files are placed together in the same directory). You can either call it directly or after adding it to your $PATH, whatever fits better your habitual practices.
+
+`soloLTRseeker   /abs/path/to/sample.gff3  /abs/path/to/sample.fasta`
+
+Two arguments deserve further clarification,though. Particularly, -r ARG will adopt different meanings depending on -u. If the latter is set to F, then the former, -r, refers to the number of threads allocated for a single BLAST process. Conversely, when -u ARG is T, the LTR library will be split in the number of files specified by -r and they will be analysed in parallel as independent BLAST processes. 
+Even though, -r and -u were both conceived with runtime in mind, we must admit now that this *parallelisation* option falls entirely within the realm of ad hoc implementations, as there are multiple factors influencing this variable.  
+However, based on our little experience we might suggest that, if server’s capacity is not a real concern, then the faster option for analysing a small/medium genome might be the second one. On the contrary, if memory resources are restricted, it might be better going for the first alternative.
+
+In any case, we are aware that shell scripting is a rather limited base for an ambitious endeavour. That being so, the pipeline does modestly seek to channel the result of much greater tools, reporting along the way as much information as possible.
 
 ## DEPENDENCIES
 
@@ -100,6 +112,6 @@ TEsorter 1.4.6 - Zhang, R.-G. et al. TEsorter: An accurate and fast method to cl
 
 ## A WORD OF WARNING
 
-To ensure its performance, we are arranging a toy run, with light files and a dry run library, to let you test the pipeline first on your device. Please, do contact us if you need to run soloLTRseeker imminently.
+To ensure its performance, we plan to upload a toy run, with light files and a dry run library, to let you test the pipeline first on your device. Please, do contact us if you need to run soloLTRseeker imminently.
 
 
