@@ -1,6 +1,6 @@
 # soloLTRseeker: a new tool to identify soloLTR sequences in eukaryotic genomes 
 
-SoloLTRs are Transposable Element (TE) derived sequences generated during unequal homologous recombination events in which, the internal region of an LTR retrotranposon (LTR-RT) and one of its two Long Terminal Repeats (LTRs) are deleted, producing a single LTR structure. We have developed soloLTRseeker, a computational pipeline, to systematically quantify and compare the intensity and impact of these structures. Although still **UNDER DEVELOPMENT**, we carried out a number of tests in several angiosperm and gymnosperm species and, so far, the results show that it annotates consistent soloLTRs. Benchmarking, error estimation and further documentation on how to run it and juice every single bit of info coming soon.
+SoloLTRs are Transposable Element (TE) derived sequences generated during unequal homologous recombination events in which, the internal region of an LTR retrotranposon (LTR-RT) and one of its two Long Terminal Repeats (LTRs) are deleted, producing a single LTR structure. We have developed soloLTRseeker, a computational pipeline, to systematically quantify and compare the intensity and impact of these structures. Although still **UNDER DEVELOPMENT**, we carried out a number of tests in several angiosperm and gymnosperm species and, so far, the results show that it annotates consistent soloLTRs.
 
 ## PIPELINE OVERVIEW
 
