@@ -58,7 +58,7 @@ OPTIONAL: to run a partial analysis, one chromosome name, as it appears in the f
 soloLTRseeker -h
 
     USAGE
-      soloLTRseeker [-b] [-n] [-t] [-c] [-l] [-s] [-o] [-q] [-p] [-m] [-r] [-u] [-h] ann_file fasta_file [chromosome_name]
+      soloLTRseeker [-n] [-b] [-t] [-c] [-l] [-s] [-o] [-q] [-p] [-m] [-r] [-u] [-h] ann_file fasta_file [chromosome_name]
 
     DESCRIPTION
       soloLTRseeker v0.0
@@ -68,21 +68,22 @@ soloLTRseeker -h
       fasta_file
 
     OPTIONAL ARGUMENTS
-      -b max length difference between LTR pairs;default = 50
-      -n min LTR length;default = 1
+      -n min LTR length; default = 1
+      -b max length difference between LTR pairs; default = 50
       -t LTR-RT lineage classification via TEsorter
-      -c percentage identity (cd-hit);default = 0.95
-      -l longest seq coverage (cd-hit);default 0.9
-      -s shortest seq coverage (cd-hit);default 0.3
+      -c percentage identity (cd-hit); default = 0.95
+      -l longest seq coverage (cd-hit); default 0.9
+      -s shortest seq coverage (cd-hit); default 0.3
       -o query coverage (BLAST);default = 0.99
-      -q query length for homology search;default = 200
-      -p query length for TSD annotation;default = 6
-      -m mismatch allowed in TSD seq;default = 1
-      -r split BLAST LTR query library into # files;default = 10
-      -u analyse BLAST query files in parallel;default = T
+      -q query length for homology search; default = 200
+      -p query length for TSD annotation; default = 6
+      -m mismatch allowed in TSD seq; default = 1
+      -r split BLAST LTR query library into # files; default = 10
+      -u analyse BLAST query files in parallel; default = T
       -h print USAGE, DESCRIPTION and OPTIONAL ARGUMENTS
 
       [chromosome_name] for partial analysis
+
 
 
 ## QUICK START
@@ -91,11 +92,11 @@ Provided your system has installed all necessary dependencies (see them below), 
 
 `soloLTRseeker   /abs/path/to/sample.gff3  /abs/path/to/sample.fasta`
 
-Two arguments deserve further clarification,though. Particularly, -r ARG will adopt different meanings depending on -u. If the latter is set to F, then the former, -r, refers to the number of threads allocated for a single BLAST process. Conversely, when -u ARG is T, the LTR library will be split in the number of files specified by -r and they will be analysed in parallel as independent BLAST processes. 
+Two arguments deserve further clarification, though. Particularly, -r ARG will adopt different meanings depending on -u. If the latter is set to F, then the former, -r, refers to the number of threads allocated for a single BLAST process. Conversely, when -u ARG is T, the LTR library will be split in the number of files specified by -r and they will be analysed in parallel as independent BLAST processes. 
 Even though, -r and -u were both conceived with runtime in mind, we must admit now that this *parallelisation* option falls entirely within the realm of ad hoc implementations, as there are multiple factors influencing this variable.  
 However, based on our little experience we might suggest that, if server’s capacity is not a real concern, then the faster option for analysing a small/medium genome might be the second one. On the contrary, if memory resources are restricted, it might be better going for the first alternative.
 
-In any case, we are aware that shell scripting is a rather limited base for an ambitious endeavour. That being so, the pipeline does modestly seek to channel the result of much greater tools, reporting along the way as much information as possible.
+In any case, we are aware that shell scripting is a rather limited base for an ambitious endeavour. That being so, it's fair to stress it again: the pipeline does modestly seek to channel the results of much greater tools, reporting along the way as much information as possible.
 
 ## DEPENDENCIES
 
