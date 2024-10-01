@@ -28,6 +28,12 @@ set -o pipefail
   }
 
 
+  ## map_val functions like an associative array, sort of, mapping key terms to values
+  map_val () {
+    awk -v key=${3} -v map=${4} 'NR == FNR{a[$1]=$2;next} {$map=a[$key]}1' ${1} ${2}
+  }
+
+
   ## parse_alg extracts relevant information from pw-alignments saved in markx2 and markx3 format (${seq})
   parse_alg () {
     seq=${2}

@@ -21,15 +21,15 @@ set -o pipefail
     mv ${file} "genome_dir/$(head -1 ${file} | cut -d/ -f1 | tr -d '>').fasta"
   done
 
-  cut -f1 chr_map.txt | while read -r chr; do
+  while read -r chr; do
     key=$(grep -P "${chr}\t" chr_map.txt | cut -f2)
     awk -v key=${key} '{if(NR == 1){$0 = ">"key; print}else{print}}' genome_dir/${chr}.fasta >> temp.fasta
-  done
+  done < <(cut -f1 chr_map.txt)
   mv temp.fasta sample.fasta
 
 
   ## rename chromosome in gff3 file
-  awk 'NR == FNR{a[$1]=$2;next} {$1=a[$1]}1' chr_map.txt sample.intact.gff3 \
+  map_val chr_map.txt sample.intact.gff3 1 1 \
     | awk '$3 !~ /repeat_region|target_site_duplication/' \
     | awk 'BEGIN{OFS="\t"}$0 !~ /^ /{print $0, $1"_"$4, $1"_"$5, sqrt(($5-$4)^2)}' \
     | sort -k1,1 -k4,4n -k12,12nr \

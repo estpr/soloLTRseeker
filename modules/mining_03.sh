@@ -23,7 +23,7 @@ set -o pipefail
   bedtools_getfasta sample.fasta-hm LTR_blast_single_hit LTR_blast_single_hit.fa
 
   ## align seq
-  test_rm_ith ltr_tsd
+  test_rm_ith "ltr_tsd"
 
   unset ltr_tsd_arr
   grep '>' LTR_blast_single_hit.fa | sed 's/>\|_.p//g' | sort | uniq | while read -r ltr; do

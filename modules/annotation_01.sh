@@ -23,7 +23,7 @@ set -o pipefail
 
 
   ## retrieve TSD seq case by case, and annotate
-  test_rm_ith soloLTR.gff3
+  test_rm_ith "soloLTR.gff3"
   counter=0
   awk '{split($4,arr,"#"); print arr[1]}' ltr_tsd.bed | while read -r solo; do
 
@@ -40,7 +40,7 @@ set -o pipefail
     ## TSD seq for soloLTR(-) are not RC
     if [ "${strand}" == "minus" ]; then
       ## following condition means that the mismatch must be located at either termini; that's evaluated in $tsd_v2_test
-      if [ "${alg_length}" == 4 ] && [ "${mismatch_n}" == 0 ]; then
+      if [ "${alg_length}" -eq 4 ] && [ "${mismatch_n}" -eq 0 ]; then
 
         ltsd=$(grep -A1 "${solo}.*5p" LTR_blast_single_hit.fa \
                  | tail -n1 \
@@ -59,22 +59,22 @@ set -o pipefail
 
         ltsd=$(grep -P "#${solo}\t" ltr_tsd \
                  | cut -f3 \
-                 | awk '{print toupper($0))}' \
+                 | awk '{print toupper($0)}' \
                  | reverse_complement -)
         rtsd=$(grep -P "#${solo}\t" ltr_tsd \
                  | cut -f4 \
-                 | awk '{print toupper($0))}' \
+                 | awk '{print toupper($0)}' \
                  | reverse_complement -)
         tsd_v2_test="TP"
 
-        if [ "${alg_length}" == 6 ]  && [ "${mismatch_n}" > 1 ]; then
+        if [ "${alg_length}" -eq 6 ] && [ "${mismatch_n}" -gt 1 ]; then
           tsd_v2_test="ERR"
         fi
 
       fi
     else
       ## following condition means that the mismatch must be located at either termini; that's evaluated in $tsd_v2_test
-      if [ "${alg_length}" == 4 ] && [ "${mismatch_n}" == 0 ]; then
+      if [ "${alg_length}" -eq 4 ] && [ "${mismatch_n}" -eq 0 ]; then
 
         ltsd=$(grep -A1 "${solo}.*5p" LTR_blast_single_hit.fa | tail -n1 | awk '{print substr($0,2,5)}')
         rtsd=$(grep -A1 "${solo}.*3p" LTR_blast_single_hit.fa | tail -n1 | awk '{print substr($0,1,5)}')
@@ -90,7 +90,7 @@ set -o pipefail
         rtsd=$(grep -P "#${solo}\t" ltr_tsd | cut -f4)
         tsd_v2_test="TP"
 
-        if [ "${alg_length}" == 6 ] && [ "${mismatch_n}" > 1 ]; then
+        if [ "${alg_length}" -eq 6 ] && [ "${mismatch_n}" -gt 1 ]; then
           tsd_v2_test="ERR"
         fi
       fi

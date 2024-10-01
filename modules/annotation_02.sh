@@ -35,6 +35,9 @@ set -o pipefail
     | awk 'BEGIN{OFS="\t"}{print $1, $2, $3, $4, $5, $6, $7, $NF, $8, $9, $10, $11}' | tr ' ' '\t' > tmp_01
   mv tmp_01 LTR_BLAST_overlap.txt
 
+  cut -f7,8 LTR_BLAST_overlap.txt | sort -rd -k 2,2 | awk '!a[$1]++' > locus.list
+  map_val locus.list LTR_BLAST_overlap.txt 7 8 > tmp_01
+  mv tmp_01 LTR_BLAST_overlap.txt
 
   ## number of hits +TSD
   wc -l soloLTR.gff3 | tally_c T "TSD" - >> hit_count.txt

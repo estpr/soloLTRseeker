@@ -20,7 +20,7 @@ set -o pipefail
 
   ## internal domain ${qlength} bp edge sequences
   ## end coordinate of lLTR and start coordinate of rLTSs are used
-  test_rm_ith sample.intact.bed--split
+  test_rm_ith "sample.intact.bed--split"
 
   awk -v qlength=${qlength} 'BEGIN{OFS="\t"}$11=="lLTR"{print $1, $5-1, $5+qlength, $10"/"$11, $6, $7}' sample.intact.gff3 \
     | grep -f <(awk '$NF == "PASS"{print $1}' LTRRT_lengths.txt) - >> sample.intact.bed--split

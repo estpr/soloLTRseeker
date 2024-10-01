@@ -19,8 +19,9 @@ set -o pipefail
 
 
   ## BLAST search
-  test_rm_ith hom_search
+  test_rm_ith "hom_search"
 
+  echo "blastn"
   ## if TEsorter_cls == "T"; then homology search is carried out by lineages.
   awk -F/ '$0 ~ ">"{print $2}' sample.intact.fa--split | sort | uniq | while read -r cls; do
 

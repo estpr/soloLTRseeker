@@ -6,8 +6,10 @@ set -o pipefail
 
   ## extract RC sequences for downstream analysis
   bedtools_getfasta () {
-    # rm -I ${1}.fai
-    printf  "${1}.fai would have been removed\n \n" >> test_rm_ith.log 
+    if [ -f ${1}.fai ];then
+      rm -I ${1}.fai
+    fi
+    printf  "${1}.fai has been removed\n \n" >> test_rm_ith.log 
     bedtools getfasta -name -s -fi ${1} -bed ${2} -fo ${3}
     sed -i 's/:.*//g' ${3}
     sed -i 's/(.)//g' ${3}
@@ -23,6 +25,12 @@ set -o pipefail
       | awk 'BEGIN {prev_end = $5; chr = $3; id = "locus_"NR}{if(prev_end >= $4 && chr == $3 && prev_end >= $5){print $0"\tNA"; prev_end = prev_end; chr = $3; id = "locus_"NR}else if(prev_end >= $4 && chr == $3 && prev_end < $5){print $0"\tNA"; prev_end = $5; chr = $3; id = "locus_"NR}else{print $0"\t"id; prev_end = $5; chr = $3; id = "locus_"NR}}' \
       | awk 'BEGIN {locus = "locus_0"} $13 ~ "NA" {$13 = locus} {locus = $13} 1' \
       | awk 'BEGIN {OFS="\t"}{print $3, $4, $5, $1, $10, $7, $11, $5-$4, $13}'
+  }
+
+
+  ## map_val functions like an associative array, sort of, mapping key terms to values
+  map_val () {
+    awk -v key=${3} -v map=${4} 'NR == FNR{a[$1]=$2;next} {$map=a[$key]}1' ${1} ${2}
   }
 
 

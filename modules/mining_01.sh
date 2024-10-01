@@ -24,6 +24,7 @@ set -o pipefail
 
   if [[ ${parallel} == "T" ]]; then
 
+    echo "blastn"
     pids=()
     while read -r file_batch; do
       blastn -task 'blastn' -query batch_${file_batch} -db sample.fasta-hm -evalue 1e-6 -qcov_hsp_perc ${overlap} -perc_identity 80 -outfmt "6 qseqid qlen sseqid sstart send length pident qstart qend sstrand evalue" > blast_batch_${file_batch} &
@@ -41,16 +42,14 @@ set -o pipefail
       echo "job $i exited with ${status[$i]}"
     done
 
+    cat blast_batch_* > LTR_blast
+
   else
 
-    ## batches are run sequentially
-    ls -htl batch_* | awk -F '[_]' '{print $NF}' | while read -r file_batch; do
-      blastn -task 'blastn' -query batch_${file_batch} -db sample.fasta-hm -evalue 1e-6 -qcov_hsp_perc ${overlap} -perc_identity 80 -outfmt "6 qseqid qlen sseqid sstart send length pident qstart qend sstrand evalue" > blast_batch_${file_batch}
-    done
+    blastn -task 'blastn' -query sample.intact.fa--LTR -db sample.fasta-hm -evalue 1e-6 -qcov_hsp_perc ${overlap} -perc_identity 80 -num_threads ${batch_size} -outfmt "6 qseqid qlen sseqid sstart send length pident qstart qend sstrand evalue" > LTR_blast
 
   fi
 
-  cat blast_batch_* > LTR_blast
 
   ## remove batch files
   test_rm_ith "blast_batch_*"

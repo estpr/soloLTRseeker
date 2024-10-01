@@ -48,6 +48,7 @@ set -o pipefail
   test_rm_ith "tmp_01*"
   test_rm_ith "hom_search"
   test_rm_ith "soloLTR.bed"
+  test_rm_ith "locus.list"
 
   cut -f1 chr_map.txt | while read -r chr; do
     test_rm_ith "genome_dir/${chr}.fasta"
@@ -56,9 +57,11 @@ set -o pipefail
 
   test_rm_ith "chr_map.txt"
 
-  awk 'NR>1{print $2}' sample.cls | awk '!a[$0]++' | while read -r cls; do
-    test_rm_ith "sample.intact.fa--split_${cls}*"
-  done
+  if [[ "${TEsorter_cls}" == "T" ]]; then
+    awk 'NR>1{print $2}' sample.cls | awk '!a[$0]++' | while read -r cls; do
+      test_rm_ith "sample.intact.fa--split_${cls}*"
+    done
+  fi
 
-  test_rm_ith sample.cls
+  test_rm_ith "sample.cls"
   test_rm_ith "sample.intact*"
