@@ -1,6 +1,7 @@
 # soloLTRseeker: a new tool to identify soloLTR sequences in eukaryotic genomes 
 
-SoloLTRs are Transposable Element (TE) derived sequences generated during unequal homologous recombination events in which, the internal region of an LTR retrotranposon (LTR-RT) and one of its two Long Terminal Repeats (LTRs) are deleted, producing a single LTR structure. We have developed soloLTRseeker, a computational pipeline, to systematically quantify and compare the intensity and impact of these structures. Although still **UNDER DEVELOPMENT**, we carried out a number of tests in several angiosperm and gymnosperm species and, so far, the results show that it annotates consistent soloLTRs.
+SoloLTRs are Transposable Element (TE) derived sequences generated during unequal homologous recombination events in which, the internal region of an LTR retrotranposon (LTR-RT) and one of its two Long Terminal Repeats (LTRs) are deleted, producing a single LTR structure. Our group in **BousiosLab** have developed soloLTRseeker, a computational pipeline, to systematically quantify and compare the intensity and impact of these structures. Although still **UNDER DEVELOPMENT**, we carried out a number of tests in several angiosperm and gymnosperm species and, so far, the results show that it annotates consistent soloLTRs.
+
 
 ## PIPELINE OVERVIEW
 
@@ -90,13 +91,14 @@ soloLTRseeker -h
 
 Provided your system has installed all necessary dependencies (see them below), it just takes executing the main script to get the pipeline started (be sure all the sh files are placed together in the same directory). You can either call it directly or after adding it to your $PATH, whatever fits better your habitual practices.
 
-`soloLTRseeker   /abs/path/to/sample.gff3  /abs/path/to/sample.fasta`
+`soloLTRseeker /abs/path/to/sample.gff3 /abs/path/to/sample.fasta`
 
 Two arguments deserve further clarification, though. Particularly, -r ARG will adopt different meanings depending on -u. If the latter is set to F, then the former, -r, refers to the number of threads allocated for a single BLAST process. Conversely, when -u ARG is T, the LTR library will be split in the number of files specified by -r and they will be analysed in parallel as independent BLAST processes. 
 Even though, -r and -u were both conceived with runtime in mind, we must admit now that this *parallelisation* option falls entirely within the realm of ad hoc implementations, as there are multiple factors influencing this variable.  
 However, based on our little experience we might suggest that, if server’s capacity is not a real concern, then the faster option for analysing a small/medium genome might be the second one. On the contrary, if memory resources are restricted, it might be better going for the first alternative.
 
 In any case, we are aware that shell scripting is a rather limited base for an ambitious endeavour. That being so, it's fair to stress it again: the pipeline does modestly seek to channel the results of much greater tools, reporting along the way as much information as possible.
+
 
 ## DEPENDENCIES
 
@@ -114,5 +116,10 @@ TEsorter 1.4.6 - Zhang, R.-G. et al. TEsorter: An accurate and fast method to cl
 ## A WORD OF WARNING
 
 To ensure its performance, we plan to upload a toy run, with light files and a dry run library, to let you test the pipeline first on your device. Please, do contact us if you need to run soloLTRseeker imminently.
+
+
+## CITATION
+
+A draft is still being written and it should be ready soon. In the meantime, you can refer to this repository.
 
 
