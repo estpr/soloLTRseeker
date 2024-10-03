@@ -1,6 +1,6 @@
 # soloLTRseeker: a new tool to identify soloLTR sequences in eukaryotic genomes 
 
-SoloLTRs are Transposable Element (TE) derived sequences generated during unequal homologous recombination events in which, the internal region of an LTR retrotranposon (LTR-RT) and one of its two Long Terminal Repeats (LTRs) are deleted, producing a single LTR structure. Our group in **BousiosLab** have developed soloLTRseeker, a computational pipeline, to systematically quantify and compare the intensity and impact of these structures. Although still **UNDER DEVELOPMENT**, we carried out a number of tests in several angiosperm and gymnosperm species and, so far, the results show that it annotates consistent soloLTRs.
+SoloLTRs are Transposable Element (TE) derived sequences generated during unequal homologous recombination events in which, the internal region of an LTR retrotranposon (LTR-RT) and one of its two Long Terminal Repeats (LTRs) are deleted, producing a single LTR structure. Our group in **BousiosLab** has developed soloLTRseeker, a computational pipeline, to systematically quantify and compare the intensity and impact of these structures. Although still **UNDER DEVELOPMENT**, we carried out a number of tests in several angiosperm and gymnosperm species and, so far, the results show that it annotates consistent soloLTRs.
 
 
 ## PIPELINE OVERVIEW
@@ -24,9 +24,9 @@ Additionally, TEsorter might be run within the pipeline too. If that is the case
 
 ## INPUT FILES
 
-genome file (fasta)  
+genome file (fasta format)  
 
-full length and LTRs coordinates of intact LTR retrotransposons (gff3)  
+full length and LTRs coordinates of intact LTR retrotransposons (combined in a single gff3 file)  
 
 OPTIONAL: to run a partial analysis, one chromosome name, as it appears in the fasta file header, can be provided ("string")  
 
@@ -75,7 +75,7 @@ soloLTRseeker -h
       -c percentage identity (cd-hit); default = 0.95
       -l longest seq coverage (cd-hit); default 0.9
       -s shortest seq coverage (cd-hit); default 0.3
-      -o query coverage (BLAST);default = 0.99
+      -o query coverage (BLAST); default = 0.99
       -q query length for homology search; default = 200
       -p query length for TSD annotation; default = 6
       -m mismatch allowed in TSD seq; default = 1
