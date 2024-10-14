@@ -23,7 +23,7 @@ set -o pipefail
     | awk 'BEGIN{OFS="\t"}{print $2, $3"_"$4}' \
     | sort -k1,1 \
     | join -1 1 -2 1 -a 1 -a 2 <(sort -k1,1 LTR_BLAST_overlap.txt | tr ' ' '\t') - \
-    | awk '{if(NF > 10){print $1, $2, $3, $3, $5, $6, $7, $NF, $8, $9, $10}else{print $1, $2, $3, $3, $5, $6, $7, "NA", $8, $9, $10}}' | tr ' ' '\t' > tmp_01
+    | awk '{if(NF > 10){print $1, $2, $3, $4, $5, $6, $7, $NF, $8, $9, $10}else{print $1, $2, $3, $4, $5, $6, $7, "NA", $8, $9, $10}}' | tr ' ' '\t' > tmp_01
   mv tmp_01 LTR_BLAST_overlap.txt
 
   ## ann locus type
