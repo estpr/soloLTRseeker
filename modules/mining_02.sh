@@ -39,7 +39,7 @@ set -o pipefail
 
     overlap="0.80"
     identity="80"
-    awk -v identity="${identity}" -v overlap="${overlap}" 'BEGIN{OFS="\t"}{if(sqrt(($9 - $8)^2) >  $2*overlap && $7 > identity){print $0, "T"}}' <(cat blast_hit_5.fa-blast blast_hit_3.fa-blast) \
+    awk -v identity="${identity}" -v overlap="${overlap}" 'BEGIN{OFS="\t"}{if(sqrt(($9 - $8)^2)+1 >  $2*overlap && $7 > identity){print $0, "T"}}' <(cat blast_hit_5.fa-blast blast_hit_3.fa-blast) \
       | sort -g -k2,7r \
       | sed 's/_.p//g' \
       | awk '!seen[$1]++' >> hom_search
