@@ -19,7 +19,7 @@ set -o pipefail
   ## find_locus function is intended to group BLAST hits located in the *same* locus under the same identifier
   ## locus is defined here as a feature whose length is extended as long as the next adjacent hit overlaps the previous one, forming an uninterrupted unit
   find_locus () {
-    awk -v overlap=${overlap} 'BEGIN{OFS="\t"}{if(sqrt(($9 - $8)^2) >  $2*overlap){print $0, "T"}}' ${1} \
+    awk -v overlap=${overlap} 'BEGIN{OFS="\t"}{if(sqrt(($9 - $8)^2)+1 >  $2*overlap){print $0, "T"}}' ${1} \
       | awk 'BEGIN {OFS="\t"}{if($4 > $5){print $1, $2, $3, $5, $4, $6, $7, $8, $9, $10, $11, $12, $13, $14}else{print $0}}' \
       | sort -k 3,3 -k 4,4n -k 5,5nr \
       | awk 'BEGIN {prev_end = $5; chr = $3; id = "locus_"NR}{if(prev_end >= $4 && chr == $3 && prev_end >= $5){print $0"\tNA"; prev_end = prev_end; chr = $3; id = "locus_"NR}else if(prev_end >= $4 && chr == $3 && prev_end < $5){print $0"\tNA"; prev_end = $5; chr = $3; id = "locus_"NR}else{print $0"\t"id; prev_end = $5; chr = $3; id = "locus_"NR}}' \
