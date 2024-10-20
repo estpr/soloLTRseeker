@@ -12,9 +12,9 @@ set -o pipefail
   source ${bin_path}/pfunlib.sh
 
   ## combine feature lengths
-  awk 'BEGIN{OFS="\t"}$11=="fl_LTRRT"{print $10, $5-$4}' sample.intact.gff3 \
+  awk 'BEGIN{OFS="\t"}$11=="fl_LTRRT"{print $10, $5-$4+1}' sample.intact.gff3 \
     | sort -k 1,1 \
-    | paste -d '\t' - <(awk 'BEGIN{OFS="\t"}$11=="lLTR"{print $10, $5-$4}' sample.intact.gff3 | sort -k 1,1) <(awk 'BEGIN{OFS="\t"}$11=="rLTR"{print $10, $5-$4}' sample.intact.gff3 | sort -k 1,1) \
+    | paste -d '\t' - <(awk 'BEGIN{OFS="\t"}$11=="lLTR"{print $10, $5-$4+1}' sample.intact.gff3 | sort -k 1,1) <(awk 'BEGIN{OFS="\t"}$11=="rLTR"{print $10, $5-$4+1}' sample.intact.gff3 | sort -k 1,1) \
     | awk 'BEGIN{OFS="\t"}{if($1 == $3 && $1 == $5){print}else{print "unsorted file!"}}' > tmp_01
 
   if grep "unsorted file!" tmp_01; then
