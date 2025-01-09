@@ -27,7 +27,7 @@ set -o pipefail
     echo "blastn"
     pids=()
     while read -r file_batch; do
-      blastn -task 'blastn' -query batch_${file_batch} -db sample.fasta-hm -evalue 1e-6 -qcov_hsp_perc ${overlap} -perc_identity 80 -outfmt "6 qseqid qlen sseqid sstart send length pident qstart qend sstrand evalue" > blast_batch_${file_batch} &
+      blastn -task 'blastn' -query batch_${file_batch} -db sample.fasta-hm -evalue 1e-6 -qcov_hsp_perc ${overlap##*.} -perc_identity 80 -outfmt "6 qseqid qlen sseqid sstart send length pident qstart qend sstrand evalue" > blast_batch_${file_batch} &
       pids+=($!)
     done < <(ls -htl batch_* | awk -F '[_]' '{print $NF}')
 
@@ -46,7 +46,7 @@ set -o pipefail
 
   else
 
-    blastn -task 'blastn' -query sample.intact.fa--LTR -db sample.fasta-hm -evalue 1e-6 -qcov_hsp_perc ${overlap} -perc_identity 80 -num_threads ${batch_size} -outfmt "6 qseqid qlen sseqid sstart send length pident qstart qend sstrand evalue" > LTR_blast
+    blastn -task 'blastn' -query sample.intact.fa--LTR -db sample.fasta-hm -evalue 1e-6 -qcov_hsp_perc ${overlap##*.} -perc_identity 80 -num_threads ${batch_size} -outfmt "6 qseqid qlen sseqid sstart send length pident qstart qend sstrand evalue" > LTR_blast
 
   fi
 
@@ -55,6 +55,7 @@ set -o pipefail
   test_rm_ith "blast_batch_*"
   test_rm_ith "batch_*"
 
+  cp LTR_blast check_blast
   ## create LTR_BLAST_overlap.txt file
   find_locus LTR_blast \
     | sort -k 1,1 -k 2,2n -k 3,3n \

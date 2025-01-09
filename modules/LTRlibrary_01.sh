@@ -9,9 +9,8 @@ set -o pipefail
   ## load lib
   source ${bin_path}/pfunlib.sh
 
-
   ## check viability of chromosome names
-  if grep -q ">" <(awk '$0 ~ ">" && $0 ~ /[^a-zA-Z0-9>_]/' sample.fasta); then
+  if grep -q ">" <(awk '$0 ~ ">" && $0 ~ /[^a-zA-Z0-9>_-]/' sample.fasta) ; then
     printf "\nSpecial characters found in chromosome names. It's likely they cause problems!\n"
     printf "We'll try to adapt them removing any non-alphanumeric character...\n"
 
@@ -21,7 +20,7 @@ set -o pipefail
     awk -F '[\t]' '{gsub(/[^a-zA-Z0-9]/,"",$1); print}' sample.intact.gff3 > tmp_01
     mv tmp_01 sample.intact.gff3
   fi
-  
+
   ## generate chromosome name tab
   awk '$0 ~ ">"' sample.fasta | awk '{chr = substr($0,2,length($0)); print chr"\tchr_"NR}' > chr_map.txt
 

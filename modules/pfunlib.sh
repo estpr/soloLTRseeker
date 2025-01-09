@@ -54,7 +54,7 @@ set -o pipefail
 
   ## change tmp file names
   rename_output () {
-    mv ${1} ${sample}_${1}
+    mv ${1} ${sample}_${2}_${1}
   }
 
 

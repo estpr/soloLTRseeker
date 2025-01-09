@@ -33,12 +33,15 @@ set -o pipefail
 
 
   ## rename outputfiles
+  if [ -z ${target_chr+x} ]; then
+    export target_chr="wga"
+  fi
 
-  rename_output hit_count.txt
-  rename_output LTRRT_lengths.txt
-  rename_output LTR_BLAST_overlap.txt
-  rename_output soloLTR.gff3
-  rename_output soloLTR.fa
+  rename_output hit_count.txt "${target_chr}"
+  rename_output LTRRT_lengths.txt "${target_chr}"
+  rename_output LTR_BLAST_overlap.txt "${target_chr}"
+  rename_output soloLTR.gff3 "${target_chr}"
+  rename_output soloLTR.fa "${target_chr}"
 
   ## cleaning directory
 

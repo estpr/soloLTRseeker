@@ -5,7 +5,7 @@ set -u
 set -o pipefail
 
 export bin_path=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-version="2024_10_01"
+version="2025_01_09"
 
 num=$(shuf -i 1-100000 -n 1)
 ## usage
@@ -135,9 +135,6 @@ done
   if [[ ! -d "${pwd}/${sample}_soloLTR/" ]]; then
     mkdir ${pwd}/${sample}_soloLTR/
     mkdir ${pwd}/${sample}_soloLTR/output_${run}/
-  elif [[ -d "${pwd}/${sample}_soloLTR/" ]] && [[ ${run//*_} == "1" ]]; then
-    echo "unable to initialize the pipeline! Directory already exists. Try changing fasta file name!"
-    exit 1
   else
     mkdir ${pwd}/${sample}_soloLTR/output_${run}/
   fi
@@ -221,6 +218,7 @@ done
   if [ -z ${target_chr} ]; then
     echo "whole genome analysis" >> out.log 2>&1
   else
+    export target_chr=${target_chr}
     echo "partial analysis: $target_chr" >> out.log 2>&1
   fi
 
