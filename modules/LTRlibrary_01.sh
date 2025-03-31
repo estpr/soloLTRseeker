@@ -22,7 +22,7 @@ set -o pipefail
   fi
 
   ## generate chromosome name tab
-  awk '$0 ~ ">"' sample.fasta | awk '{chr = substr($0,2,length($0)); print chr"\tchr_"NR}' > chr_map.txt
+  awk '$0 ~ ">"' sample.fasta | awk '{chr = substr($0,2,length($0)); print chr"\treplacement_"NR}' > chr_map.txt
 
 
   ## split genome and rename headers
