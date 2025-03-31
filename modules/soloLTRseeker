@@ -140,8 +140,8 @@ done
   fi
 
   if [[ "${fasta_file}" == *".gz" ]]; then
-    cp -p ${fasta_file} ${pwd}/${sample}_soloLTR/output_${run}/
-    bgzip -d -c *.gz > ${pwd}/${sample}_soloLTR/output_${run}/sample.fasta
+    cp -p ${fasta_file} ${pwd}/${sample}_soloLTR/output_${run}/sample.fasta.gz
+    bgzip -d ${pwd}/${sample}_soloLTR/output_${run}/sample.fasta.gz
   else
     cp -p ${fasta_file} ${pwd}/${sample}_soloLTR/output_${run}/sample.fasta
   fi
