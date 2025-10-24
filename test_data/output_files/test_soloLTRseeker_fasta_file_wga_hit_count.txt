@@ -1,0 +1,13 @@
+## LTR library: 
+test_soloLTRseeker_fasta_file	2025_10_23_1	raw_fl_LTRRT	50
+test_soloLTRseeker_fasta_file	2025_10_23_1	PASS_fl_LTRRT	50
+test_soloLTRseeker_fasta_file	2025_10_23_1	TG..CA	47
+test_soloLTRseeker_fasta_file	2025_10_23_1	cd-hit	45
+## soloLTR mining: 
+test_soloLTRseeker_fasta_file	2025_10_23_1	BLAST_overlap	155
+test_soloLTRseeker_fasta_file	2025_10_23_1	BLAST_single_hit	93
+test_soloLTRseeker_fasta_file	2025_10_23_1	homology	40
+## soloLTR annotation: 
+test_soloLTRseeker_fasta_file	2025_10_23_1	TSD	25
+test_soloLTRseeker_fasta_file	2025_10_23_1	TSD_no_mismatch	22
+test_soloLTRseeker_fasta_file	2025_10_23_1	TSD_in_partial_locus	0
