@@ -34,7 +34,7 @@ set -o pipefail
   done
 
   while read -r chr; do
-    key=$(grep -P "${chr}\t" chr_map.txt | cut -f2)
+    key=$(grep -P "^${chr}\t" chr_map.txt | cut -f2)
     awk -v key=${key} '{if(NR == 1){$0 = ">"key; print}else{print}}' genome_dir/${chr}.fasta >> temp.fasta
   done < <(cut -f1 chr_map.txt)
   mv temp.fasta sample.fasta
