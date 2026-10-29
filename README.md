@@ -59,7 +59,7 @@ OPTIONAL: to run a partial analysis, one chromosome name, as it appears in the f
 soloLTRseeker -h
 
     USAGE
-      soloLTRseeker [-n] [-b] [-t] [-c] [-l] [-s] [-o] [-q] [-p] [-m] [-r] [-u] [-h] ann_file fasta_file [chromosome_name]
+      soloLTRseeker [-n] [-b] [-t] [-c] [-l] [-s] [-o] [-q] [-p] [-m] [-r] [-h] ann_file fasta_file [chromosome_name]
 
     DESCRIPTION
       soloLTRseeker v0.0
@@ -69,7 +69,7 @@ soloLTRseeker -h
       fasta_file
 
     OPTIONAL ARGUMENTS
-      -n min LTR length; default = 1
+      -n min LTR length; default = 100
       -b max length difference between LTR pairs; default = 50
       -t LTR-RT lineage classification via TEsorter
       -c percentage identity (cd-hit); default = 0.95
@@ -79,8 +79,7 @@ soloLTRseeker -h
       -q query length for homology search; default = 200
       -p query length for TSD annotation; default = 6
       -m mismatch allowed in TSD seq; default = 1
-      -r split BLAST LTR query library into # files; default = 10
-      -u analyse BLAST query files in parallel; default = T
+      -r threads; default = 1
       -h print USAGE, DESCRIPTION and OPTIONAL ARGUMENTS
 
       [chromosome_name] for partial analysis
@@ -93,16 +92,12 @@ Provided your system has installed all necessary dependencies (see them below), 
 
 `soloLTRseeker /abs/path/to/sample.gff3 /abs/path/to/sample.fasta`
 
-Two arguments deserve further clarification, though. Particularly, -r ARG will adopt different meanings depending on -u. If the latter is set to F, then the former, -r, refers to the number of threads allocated for a single BLAST process. Conversely, when -u ARG is T, the LTR library will be split in the number of files specified by -r and they will be analysed in parallel as independent BLAST processes. 
-Even though, -r and -u were both conceived with runtime in mind, we must admit now that this *parallelisation* option falls entirely within the realm of ad hoc implementations, as there are multiple factors influencing this variable.  
-However, based on our little experience we might suggest that, if server’s capacity is not a real concern, then the faster option for analysing a small/medium genome might be the second one. On the contrary, if memory resources are restricted, it might be better going for the first alternative.
-
 In any case, we are aware that shell scripting is a rather limited base for an ambitious endeavour. That being so, it's fair to stress it again: the pipeline does modestly seek to channel the results of much greater tools, reporting along the way as much information as possible.
 
 
 ## DEPENDENCIES
 
-BEDtools v2.27.1 - Quinlan AR and Hall IM. BEDTools: a flexible suite of utilities for comparing genomic features. *Bioinformatics*. 26, 6, pp. 841–842 (2010)  
+BEDtools v2.27.1 - Quinlan AR and Hall IM. BEDTools: a flexible suite of utilities for comparing genomic features. *Bioinformatics*. 26, 6, pp. 841–842 (2010) 
 
 BLAST 2.14.1+ - Altschul, S. F. et al. Basic local alignment search tool. *Journal of Molecular Biology* 215, 403-410 (1990)  
 
@@ -110,8 +105,13 @@ CD-HIT version 4.8.1 - Fu, Limin et al. CD-HIT: accelerated for clustering the n
 
 EMBOSS 6.6.0.0 - Rice, P., Longden, I. and Bleasby, A. EMBOSS: The European Molecular Biology Open Software Suite. *Trends in Genetics* 16, 276–277 (2000)  
 
-TEsorter 1.4.6 - Zhang, R.-G. et al. TEsorter: An accurate and fast method to classify LTR-retrotransposons in plant genomes. *Horticulture Research* 9, uhac017 (2022)  
+TEsorter 1.4.6 - Zhang, R.-G. et al. TEsorter: An accurate and fast method to classify LTR-retrotransposons in plant genomes. *Horticulture Research* 9, uhac017 (2022)
 
+R Core Team (2026). R: A Language and Environment for Statistical Computing. R Foundation for Statistical Computing, Vienna, Austria
+
+Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” Journal of Open Source Software, *4*(43), 1686
+
+Wilke C (2025). cowplot: Streamlined Plot Theme and Plot Annotations for ggplot2
 
 ## A WORD OF WARNING
 
