@@ -18,39 +18,31 @@ set -o pipefail
 
   grep -f hom_search tmp_01 \
     | sed 's/minus/\-/g' \
-    | sed 's/plus/+/g' > LTR_blast_single_hit
+    | sed 's/plus/+/g' \
+    | sort -k4,4 > LTR_blast_single_hit
 
   bedtools_getfasta sample.fasta-hm LTR_blast_single_hit LTR_blast_single_hit.fa
 
-  ## align seq
-  test_rm_ith "ltr_tsd"
+  ## n of LTRs / batch
+  ## which is set by -r
+  fasta_to_one LTR_blast_single_hit.fa > LTR_blast_single_hit.fa_fasta_to_one
+  n_lines=$(wc -l < LTR_blast_single_hit.fa_fasta_to_one \
+              | awk -v batch_size=${batch_size} '{if(int($0/batch_size) < $0/batch_size){print int($0/batch_size)+1}else{print int($0/batch_size)}}' \
+              | awk '{if($0 % 2 != 0){print $0+1}else{print}}')
+  split -l ${n_lines} LTR_blast_single_hit.fa_fasta_to_one pw_alg_batch_
 
-  unset ltr_tsd_arr
-  grep '>' LTR_blast_single_hit.fa | sed 's/>\|_.p//g' | sort | uniq | while read -r ltr; do
+  while read -r pw_alg_batch_i_; do
+    tr ' ' '\n' < $pw_alg_batch_i_ > tmp_$pw_alg_batch_i_
+    mv tmp_$pw_alg_batch_i_ $pw_alg_batch_i_
+  done < <(ls pw_alg_batch_*)
 
-    grep -A1 "${ltr}" LTR_blast_single_hit.fa | grep -v '\-\-' > ltr.fa
+  find $PWD -type f -name 'pw_alg_batch_*' | xargs -P ${batch_size} -n 1 ${bin_path}/mining_03_aux_01.sh
 
-    water <(head -n2 ltr.fa) <(tail -n2 ltr.fa) -aformat markx2 -outfile ltr.fa.alg.i -gapopen 16 -gapextend 4 2>> water.log
-    water <(head -n2 ltr.fa) <(tail -n2 ltr.fa) -aformat markx3 -outfile ltr.fa.alg.ii -gapopen 16 -gapextend 4 2>> water.log
+  cat tmp.*/ltr_tsd > ltr_tsd
 
-    ltr_tsd_arr[0]=$(echo ${sample})
-    ltr_tsd_arr[1]=$(echo ${ltr})
-    ltr_tsd_arr[2]=$(parse_alg ltr.fa.alg.i 1)
-    ltr_tsd_arr[3]=$(parse_alg ltr.fa.alg.ii 2)
-    ltr_tsd_arr[4]=$(echo ${#ltr_tsd_arr[2]})
-    ltr_tsd_arr[5]=$(echo ${#ltr_tsd_arr[3]})
-    ltr_tsd_arr[6]=$(parse_alg ltr.fa.alg.i 2 | awk 'BEGIN{OFS="\t"}{print gsub(/\./,"",$1)}')
-    ltr_tsd_arr[7]=$(( ${ltr_tsd_arr[4]} - ${ltr_tsd_arr[6]} ))
-    ltr_tsd_arr[8]=$(parse_alg ltr.fa.alg.i 2 | awk -F '[^.]' -vORS=';' '{i=1; while(i<=NF) {print length($i); i++} } END {printf "\n"}')
-
-    echo ${ltr_tsd_arr[@]} | tr ' ' '\t' >> ltr_tsd
-
-    unset ltr_tsd_arr
-    test_rm_ith ltr.fa.alg.i
-    test_rm_ith ltr.fa.alg.ii
-    test_rm_ith ltr.fa
-
-  done
+  test_rm_ith "pw_alg_batch_*"
+  test_rm_ith "tmp.*/*"
+  rmdir tmp.*/
 
   grep -c "Smith-Waterman local alignment of sequences" water.log | awk '{print $0/2 " hits aligned"}'
   (grep -v -c "Smith-Waterman local alignment of sequences" water.log || true) | awk '$0 > 0{print "WARNING: water err!"}'

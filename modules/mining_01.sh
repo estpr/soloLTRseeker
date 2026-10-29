@@ -55,7 +55,6 @@ set -o pipefail
   test_rm_ith "blast_batch_*"
   test_rm_ith "batch_*"
 
-  cp LTR_blast check_blast
   ## create LTR_BLAST_overlap.txt file
   find_locus LTR_blast \
     | sort -k 1,1 -k 2,2n -k 3,3n \

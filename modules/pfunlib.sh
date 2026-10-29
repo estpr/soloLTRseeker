@@ -15,6 +15,11 @@ set -o pipefail
     sed -i 's/(.)//g' ${3}
   }
 
+  ## transform fasta file into tsv data
+  fasta_to_one () {
+  awk 'BEGIN{OFS="\t"}{if($0 ~ ">"){ORS = FS; print "\n"$0}else if($0 !~ ">"){ORS = "";print $0}else{print "\n"}}' ${1} \
+    | awk 'NR>1{print $0}'
+  }
 
   ## find_locus function is intended to group BLAST hits located in the *same* locus under the same identifier
   ## locus is defined here as a feature whose length is extended as long as the next adjacent hit overlaps the previous one, forming an uninterrupted unit
@@ -83,7 +88,7 @@ set -o pipefail
     done
 
     ## test how many files will be treated
-    if [[ $counter -lt 20 ]];then
+    if [[ $counter -lt 100 ]];then
       printf "$counter files will be rm:\n" >> test_rm_ith.log
     else
       printf "Too many args. Aborted!" >> test_rm_ith.log

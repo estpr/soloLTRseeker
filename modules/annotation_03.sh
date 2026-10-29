@@ -20,6 +20,7 @@ set -o pipefail
     remap_chr ${chr} ${key} LTR_BLAST_overlap.txt || true
     remap_chr ${chr} ${key} soloLTR.gff3 || true
     remap_chr ${chr} ${key} soloLTR.fa || true
+    remap_chr ${chr} ${key} sample.karyo || true
   done
 
   ## append headers

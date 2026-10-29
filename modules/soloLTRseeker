@@ -5,7 +5,7 @@ set -u
 set -o pipefail
 
 export bin_path=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-version="2025_01_09"
+version="2026_10_28"
 
 num=$(shuf -i 1-100000 -n 1)
 ## usage
@@ -13,7 +13,7 @@ usage() {
     cat <<EOF
 
     USAGE
-      $(basename $0) [-n] [-b] [-t] [-c] [-l] [-s] [-o] [-q] [-p] [-m] [-r] [-u] [-h] ann_file fasta_file [chromosome_name]
+      $(basename $0) [-n] [-b] [-t] [-c] [-l] [-s] [-o] [-q] [-p] [-m] [-r] [-h] ann_file fasta_file [chromosome_name]
 
     DESCRIPTION
       soloLTRseeker v0.0
@@ -23,7 +23,7 @@ usage() {
       fasta_file
 
     OPTIONAL ARGUMENTS
-      -n min LTR length; default = 1
+      -n min LTR length; default = 100
       -b max length difference between LTR pairs; default = 50
       -t LTR-RT lineage classification via TEsorter
       -c percentage identity (cd-hit); default = 0.95
@@ -33,8 +33,7 @@ usage() {
       -q query length for homology search; default = 200
       -p query length for TSD annotation; default = 6
       -m mismatch allowed in TSD seq; default = 1
-      -r split BLAST LTR query library into # files; default = 10
-      -u analyse BLAST query files in parallel; default = T
+      -r threads; default = 1
       -h print USAGE, DESCRIPTION and OPTIONAL ARGUMENTS
 
       [chromosome_name] for partial analysis
@@ -44,20 +43,7 @@ EOF
 }
 
 
-cat << EOF >> out.log--$num
-
-############################################################
-######################  soloLTRseeker   ####################
-############################################################
-
-version: $(basename $0) ${version}
-$(date +"%Y/%m/%d %H:%M:%S")
-
-######################    option set    ####################
-
-EOF
-
-while getopts ":b:n:tc:l:s:o:q:p:m:r:u:h" opt;do
+while getopts ":b:n:tc:l:s:o:q:p:m:r:h" opt;do
   case "${opt}" in
      n)
        echo "min LTR length: $OPTARG" >> out.log--$num 2>&1
@@ -100,12 +86,8 @@ while getopts ":b:n:tc:l:s:o:q:p:m:r:u:h" opt;do
        export mismatch=$OPTARG
        ;;
      r)
-       echo "split LTR query library into $OPTARG files" >> out.log--$num 2>&1
+       echo "$OPTARG threads" >> out.log--$num 2>&1
        export batch_size=$OPTARG
-       ;;
-     u)
-       echo "run BLAST in parallel: $OPTARG" >> out.log--$num 2>&1
-       export parallel=$OPTARG
        ;;
      h)
        usage
@@ -116,6 +98,7 @@ while getopts ":b:n:tc:l:s:o:q:p:m:r:u:h" opt;do
   esac
 done
 
+
   ann_file=${@:$OPTIND:1}
   fasta_file=${@:$OPTIND+1:1}
   target_chr=${@:$OPTIND+2:1}
@@ -124,6 +107,22 @@ done
     usage
     exit 1
   fi
+
+
+cat << EOF >> out.log--$num
+
+############################################################
+######################  soloLTRseeker   ####################
+############################################################
+
+version: $(basename $0) ${version}
+$(date +"%Y/%m/%d %H:%M:%S")
+
+######################    option set    ####################
+
+EOF
+
+
 
   ## set dir and input files
   export pwd=$(pwd)
@@ -156,7 +155,7 @@ done
 
   ## declare default options
   if [ -z ${min_LTR_length+x} ]; then
-    export min_LTR_length="1"
+    export min_LTR_length="100"
     echo "default min LTR length: ${min_LTR_length}" >> out.log 2>&1
   fi
 
@@ -206,8 +205,8 @@ done
   fi
 
   if [ -z ${batch_size+x} ]; then
-    export batch_size="10"
-    echo "split LTR query library into ${batch_size} files" >> out.log 2>&1
+    export batch_size="1"
+    echo "${batch_size} threads" >> out.log 2>&1
   fi
 
   if [ -z ${parallel+x} ]; then
@@ -222,7 +221,6 @@ done
     echo "partial analysis: $target_chr" >> out.log 2>&1
   fi
 
-
   ## load lib
   source ${bin_path}/pfunlib.sh
 
@@ -235,7 +233,7 @@ $(date +"%Y/%m/%d %H:%M:%S")
 EOF
 
 export module="LTR library"
-${bin_path}/LTRlibrary_01.sh >> out.log 2>&1
+${bin_path}/LTRlibrary_01.sh >> out.log || { echo "LTRlibrary_01.sh crashed!" >> out.log ; exit 1; }
 
 cat << EOF >> out.log
 
@@ -243,7 +241,7 @@ chromosome names were adapted to avoid conflicts...
 
 EOF
 
-${bin_path}/LTRlibrary_02.sh >> out.log 2>&1
+${bin_path}/LTRlibrary_02.sh >> out.log || { echo "LTRlibrary_02.sh crashed!" >> out.log ; exit 1; }
 
 cat << EOF >> out.log
 
@@ -251,7 +249,7 @@ LTRRT coordinates successfully retrieved.
 
 EOF
 
-${bin_path}/LTRlibrary_03.sh >> out.log 2>&1
+${bin_path}/LTRlibrary_03.sh >> out.log || { echo "LTRlibrary_03.sh crashed!" >> out.log ; exit 1; }
 
 cat << EOF >> out.log
 
@@ -260,10 +258,10 @@ min LTR length and max size divergence were evaluated.
 EOF
 
   if [[ "${TEsorter_cls}" == "T" ]]; then
-    ${bin_path}/LTRlibrary_04.sh >> out.log 2>&1
+    ${bin_path}/LTRlibrary_04.sh >> out.log || { echo "LTRlibrary_04.sh crashed!" >> out.log ; exit 1; }
   fi
 
-${bin_path}/LTRlibrary_05.sh >> out.log 2>&1
+${bin_path}/LTRlibrary_05.sh >> out.log || { echo "LTRlibrary_05.sh crashed!" >> out.log ; exit 1; }
 
 cat << EOF >> out.log
 
@@ -271,7 +269,7 @@ sequences for downstream analysis were extracted
 
 EOF
 
-${bin_path}/LTRlibrary_06.sh >> out.log 2>&1
+${bin_path}/LTRlibrary_06.sh >> out.log || { echo "LTRlibrary_06.sh crashed!" >> out.log ; exit 1; }
 
 cat << EOF >> out.log
 
@@ -279,7 +277,7 @@ TG..CA assessment performed.
 
 EOF
 
-${bin_path}/LTRlibrary_07.sh >> out.log 2>&1
+${bin_path}/LTRlibrary_07.sh >> out.log || { echo "LTRlibrary_07.sh crashed!" >> out.log ; exit 1; }
 
 cat << EOF >> out.log
 
@@ -306,9 +304,10 @@ if [ -n "$target_chr" ]; then
   rm -I sample.fasta.fai
 fi
 
+awk 'BEGIN{OFS="\t"}{print $1, $2}' sample.fasta.fai > sample.karyo
 
 export module="soloLTR mining"
-${bin_path}/mining_01.sh >> out.log 2>&1
+${bin_path}/mining_01.sh >> out.log || { echo "mining_01.sh crashed!" >> out.log ; exit 1; }
 
 cat << EOF >> out.log
 
@@ -318,7 +317,7 @@ $(date +"%Y/%m/%d %H:%M:%S")
 
 EOF
 
-${bin_path}/mining_02.sh >> out.log 2>&1
+${bin_path}/mining_02.sh >> out.log || { echo "mining_02.sh crashed!" >> out.log ; exit 1; }
 
 cat << EOF >> out.log
 
@@ -328,7 +327,7 @@ $(date +"%Y/%m/%d %H:%M:%S")
 
 EOF
 
-${bin_path}/mining_03.sh >> out.log 2>&1
+${bin_path}/mining_03.sh >> out.log || { echo "mining_03.sh crashed!" >> out.log ; exit 1; }
 
 cat << EOF >> out.log
 
@@ -339,7 +338,7 @@ $(date +"%Y/%m/%d %H:%M:%S")
 EOF
 
 export module="soloLTR annotation"
-${bin_path}/annotation_01.sh >> out.log 2>&1
+${bin_path}/annotation_01.sh >> out.log || { echo "annotation_01.sh crashed!" >> out.log ; exit 1; }
 
 cat << EOF >> out.log
 
@@ -349,8 +348,24 @@ $(date +"%Y/%m/%d %H:%M:%S")
 
 EOF
 
-${bin_path}/annotation_02.sh >> out.log 2>&1
-${bin_path}/annotation_03.sh >> out.log 2>&1
+${bin_path}/annotation_02.sh >> out.log || { echo "annotation_02.sh crashed!" >> out.log ; exit 1; }
+${bin_path}/annotation_03.sh >> out.log || { echo "annotation_03.sh crashed!" >> out.log ; exit 1; }
+
+cat << EOF >> out.log
+
+######################  visual summary  #####################
+
+$(date +"%Y/%m/%d %H:%M:%S")
+
+EOF
+
+query_file_=$(ls ${sample}_*_LTRRT_lengths.txt)
+soloLTR_file_=$(ls ${sample}_*_LTR_BLAST_overlap.txt)
+karyo_file_="sample.karyo"
+Rscript ${bin_path}/annotation_04.R "--bin_path=$bin_path" "--accession_=$sample" "--query_file_=$query_file_" "--soloLTR_file_=$soloLTR_file_" "--karyo_file_=$karyo_file_" >> out.log || { echo "annotation_04.R crashed!" >> out.log ; exit 1; }
+
+test_rm_ith "sample.karyo"
+
 
 cat << EOF >> out.log
 
