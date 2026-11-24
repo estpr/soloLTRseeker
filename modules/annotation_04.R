@@ -358,22 +358,51 @@ lLTR_sum_ <- query_data_ %>%
   maxVal_l_ <- max(LTRRT_prop_$n_end_,na.rm = T)*-1
   maxVal_r_ <- max(soloLTR_prop_$n_end_,na.rm = T)
   prop_label_ <- max(soloLTR_prop_$n_start_,na.rm = T)+((max(soloLTR_prop_$n_end_,na.rm = T)-max(soloLTR_prop_$n_start_,na.rm = T))/2)
- 
+  prop_label_ <- min(soloLTR_prop_$n_end_,na.rm = T)/2
+
   step_ <- 0.20
-  p_ratio_ <- ggplot() +
-    geom_rect(data = LTRRT_prop_[,], aes(xmin = n_start_*-1, xmax = n_end_*-1, ymin = -Inf, ymax = Inf, fill = label_)) +
-    geom_rect(data = soloLTR_prop_[,], aes(xmin = n_start_, xmax = n_end_, ymin = -Inf, ymax = Inf, fill = label_)) +
-    annotate(geom = "text",x = prop_label_, y = Inf, label = paste0("\n\n",step_*100,"%"), size.unit = "pt", size = 6,color = "grey45") +
-    geom_col(data = LTRRT_sum_, aes(x = n_*-1, y = class_), color = NA, fill = "darkblue", width = .605) +
-    geom_col(data = soloLTR_sum_, aes(x = n_, y = class_), color = NA, fill = "orangered", width = .605) +
-    geom_text(data = ratio_,aes(y = class_, x = 0+(maxVal_r_*0.115), label = round(ratio_,digits = 2)), size.unit = "pt", size = 4.85,hjust = 1) +
-    geom_vline(xintercept = 0) +
-    xlab("Obs (#)") +
-    facet_wrap(vars(class_),ncol = 1, scales = "free") +
-    scale_x_continuous(labels = ~ ifelse(. < 0, .*-1,.),expand = expansion(0)) +
-    scale_fill_manual(values = grey_palette_) +
-    coord_cartesian(clip = "on",xlim = c(maxVal_l_,maxVal_r_)) +
-    theme(panel.background = element_rect(color = NA, fill = NA),
+
+  if(length(unique(LTRRT_sum_$class_)) <= 5){
+    p_ratio_ <- ggplot() +
+      geom_rect(data = LTRRT_prop_[,], aes(xmin = n_start_*-1, xmax = n_end_*-1, ymin = -Inf, ymax = Inf, fill = label_)) +
+      geom_rect(data = soloLTR_prop_[,], aes(xmin = n_start_, xmax = n_end_, ymin = -Inf, ymax = Inf, fill = label_)) +
+      annotate(geom = "text",x = prop_label_, y = Inf, label = paste0("\n\n",step_*100,"%"), size.unit = "pt", size = 6,color = "grey45") +
+      geom_col(data = LTRRT_sum_, aes(x = n_*-1, y = class_), color = NA, fill = "darkblue", width = .605) +
+      geom_col(data = soloLTR_sum_, aes(x = n_, y = class_), color = NA, fill = "orangered", width = .605) +
+      geom_text(data = ratio_,aes(y = class_, x = 0+(maxVal_r_*0.115), label = round(ratio_,digits = 2)), size.unit = "pt", size = 4.85,hjust = 1) +
+      geom_vline(xintercept = 0) +
+      xlab("Obs (#)") +
+      facet_wrap(vars(class_),ncol = 1, scales = "free") +
+      scale_x_continuous(labels = ~ ifelse(. < 0, .*-1,.),expand = expansion(0)) +
+      scale_fill_manual(values = grey_palette_) +
+      coord_cartesian(clip = "on",xlim = c(maxVal_l_,maxVal_r_)) +
+      theme(panel.background = element_rect(color = NA, fill = NA),
+        panel.grid = element_blank(),
+        panel.ontop = T,
+        axis.title.y = element_blank(),
+        axis.line.x = element_line(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "none",
+        strip.clip = "off",
+        strip.background = element_rect(color = NA, fill = NA),
+        strip.text = element_text(hjust = 0), 
+        text = element_text(color = "black"))
+  }else{
+     p_ratio_ <- ggplot() +
+       geom_rect(data = LTRRT_prop_[,], aes(xmin = n_start_*-1, xmax = n_end_*-1, ymin = -Inf, ymax = Inf, fill = label_)) +
+       geom_rect(data = soloLTR_prop_[,], aes(xmin = n_start_, xmax = n_end_, ymin = -Inf, ymax = Inf, fill = label_)) +
+       annotate(geom = "text",x = prop_label_, y = Inf, label = paste0("\n\n",step_*100,"%"), size.unit = "pt", size = 3.85,color = "grey45") +
+       geom_col(data = LTRRT_sum_, aes(x = n_*-1, y = class_), color = NA, fill = "darkblue", width = .605) +
+       geom_col(data = soloLTR_sum_, aes(x = n_, y = class_), color = NA, fill = "orangered", width = .605) +
+       geom_text(data = ratio_,aes(y = class_, x = Inf, label = paste0(round(ratio_,digits = 2),"  ")), size.unit = "pt", size = 3.85,hjust = 1) +
+       geom_text(data = soloLTR_sum_,aes(y = class_, x = -Inf, label = paste0("  ",class_)), size.unit = "pt", size = 3.85,hjust = 0) +
+       geom_vline(xintercept = 0) +
+       xlab("Obs (#)") +
+       scale_x_continuous(labels = ~ ifelse(. < 0, .*-1,.),expand = expansion(0)) +
+       scale_fill_manual(values = grey_palette_) +
+       coord_cartesian(clip = "on",xlim = c(maxVal_l_,maxVal_r_)) +
+       theme(panel.background = element_rect(color = NA, fill = NA),
           panel.grid = element_blank(),
           panel.ontop = T,
           axis.title.y = element_blank(),
@@ -383,9 +412,11 @@ lLTR_sum_ <- query_data_ %>%
           legend.position = "none",
           strip.clip = "off",
           strip.background = element_rect(color = NA, fill = NA),
-          strip.text = element_text(hjust = 0), 
+          strip.text = element_text(hjust = 0),
           text = element_text(color = "black"))
   
+  }
+
   }
 
 # karyotyping
@@ -444,7 +475,7 @@ lLTR_sum_ <- query_data_ %>%
     LTRRT_dist_sum_ <-  merge(LTRRT_dist_sum_,dist_start_,all.y = T)
     LTRRT_dist_sum_[,c(2,3,4)] <- apply(LTRRT_dist_sum_[,c(2,3,4)],2,function(x) ifelse(is.na(x) == T, 0,x))
     
-    class_list_ <- unique(query_data_$class_)
+    class_list_ <- unique(query_data_$class_) %>% sort()
     
     p_LTRRT_ <- ggplot() +
       annotate(geom = "rect", xmin = 0, xmax = seqID_length_i_, ymin = 0, ymax = 1, fill = "grey96") +
@@ -454,6 +485,10 @@ lLTR_sum_ <- query_data_ %>%
       geom_line(data = LTRRT_dist_sum_, aes(x = dist_start_*binwidth_, y = space_prop_), linewidth = linewidth_, color = "darkblue")
     
     gap_ <- 0.4
+    y_text_size_ <- case_when(length(class_list_) <= 4 ~ 8,
+                              length(class_list_) > 8 ~ 2.15,
+                              length(class_list_) > 4 | length(class_list_) <= 8 ~ 5,
+                              .default = 4)
     for(j_ in 1:length(class_list_)){
       class_j_ <- class_list_[j_]
       y_ <- (seq(gap_,10,gap_)[j_])*-1
@@ -476,7 +511,7 @@ lLTR_sum_ <- query_data_ %>%
     p_LTRRT_ <- p_LTRRT_ +
       annotate(geom = "segment", x = 0, xend = seqID_length_i_, y = y_, yend = y_, color = "black") +
       geom_segment(data = breaks_x_, aes(x = value_, xend = value_, y = y_, yend = y_-0.165)) +
-      scale_y_continuous(breaks = c((seq(gap_,10,gap_)[1:j_])*-1,0,.5,1), labels = c(paste0(rev(class_list_)," "),"0 ","50% ","100% "),expand = expansion(mult = c(0,.025)))  +
+      scale_y_continuous(breaks = c((seq(gap_,10,gap_)[1:j_])*-1,0,.5,1), labels = c(paste0(class_list_," "),"0 ","50% ","100% "),expand = expansion(mult = c(0,.025)))  +
       scale_x_continuous(expand = expansion(0), breaks = breaks_x_$value_, label = breaks_x_$value_) +
       scale_fill_gradient(low = "#FFA674", high = "orangered") +
       labs(title = seqID_i_,
@@ -488,7 +523,7 @@ lLTR_sum_ <- query_data_ %>%
             axis.text.x = element_text(size = 10,color = "black"),
             axis.title.x = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.y = element_text(size = 8,color = "black"),
+            axis.text.y = element_text(size = y_text_size_,color = "black"),
             axis.line.x = element_blank(),
             panel.grid = element_blank(),
             plot.margin = margin(t=5,r=5,b=0,l=5,"pt"),
